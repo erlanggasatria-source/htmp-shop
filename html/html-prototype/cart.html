@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keranjang Belanja — TokoKu</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="container">
+      <a href="#" class="navbar-brand">🛍️ TokoKu</a>
+      <nav class="navbar-menu">
+        <a href="#">Katalog</a>
+        <a href="#">Kategori</a>
+        <a href="#"><strong>Keranjang (2)</strong></a>
+        <a href="#">Masuk</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 2rem 1rem;">
+    <h1 class="h1" style="margin-bottom: 1.5rem;">Keranjang Belanja</h1>
+
+    <div class="grid grid-2" style="gap: 1.5rem; align-items: start;">
+
+      <!-- LIST ITEM -->
+      <section class="stack">
+
+        <!-- ITEM 1 -->
+        <article class="card cart-item">
+          <img src="https://picsum.photos/seed/shoe1/200/200" alt="Sepatu Sneakers Aero" />
+          <div>
+            <h3 class="h3">Sepatu Sneakers Aero</h3>
+            <p class="text-muted" style="font-size: 0.85rem;">
+              Hitam · Ukuran 42 · Low Cut
+            </p>
+            <div class="price price-small" style="margin-top: 0.5rem;">Rp 459.000</div>
+          </div>
+          <div class="cart-item-actions stack" style="align-items: flex-end;">
+            <div class="qty-control">
+              <button>−</button>
+              <input type="text" value="1" readonly />
+              <button>+</button>
+            </div>
+            <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+              🗑 Hapus
+            </button>
+          </div>
+        </article>
+
+        <!-- ITEM 2 -->
+        <article class="card cart-item">
+          <img src="https://picsum.photos/seed/bag1/200/200" alt="Tas Ransel Urban" />
+          <div>
+            <h3 class="h3">Tas Ransel Urban</h3>
+            <p class="text-muted" style="font-size: 0.85rem;">
+              Navy · Large
+            </p>
+            <div class="price price-small" style="margin-top: 0.5rem;">Rp 289.000</div>
+          </div>
+          <div class="cart-item-actions stack" style="align-items: flex-end;">
+            <div class="qty-control">
+              <button>−</button>
+              <input type="text" value="2" readonly />
+              <button>+</button>
+            </div>
+            <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+              🗑 Hapus
+            </button>
+          </div>
+        </article>
+
+        <!-- KOSONG STATE (contoh, tidak ditampilkan di mock ini) -->
+        <!--
+        <div class="card text-center" style="padding: 3rem 1rem;">
+          <div style="font-size: 3rem;">🛒</div>
+          <h2 class="h2">Keranjang masih kosong</h2>
+          <p class="text-muted">Yuk mulai belanja!</p>
+          <a href="#" class="btn btn-primary" style="margin-top: 1rem;">Mulai Belanja</a>
+        </div>
+        -->
+
+      </section>
+
+      <!-- SIDEBAR: RINGKASAN -->
+      <aside class="cart-summary">
+        <h2 class="h2" style="margin-bottom: 1rem;">Ringkasan Belanja</h2>
+
+        <div class="summary-row">
+          <span>Subtotal (3 barang)</span>
+          <span>Rp 1.037.000</span>
+        </div>
+        <div class="summary-row">
+          <span>Ongkos Kirim</span>
+          <span class="text-muted">Dihitung di checkout</span>
+        </div>
+        <div class="summary-row">
+          <span class="text-muted">Diskon</span>
+          <span class="text-muted">− Rp 0</span>
+        </div>
+
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>Rp 1.037.000</span>
+        </div>
+
+        <button class="btn btn-primary btn-block" style="margin-top: 1rem;">
+          Checkout →
+        </button>
+
+        <a href="#" class="btn btn-outline btn-block" style="margin-top: 0.5rem;">
+          Lanjut Belanja
+        </a>
+
+        <div class="divider"></div>
+
+        <div class="text-muted" style="font-size: 0.8rem; line-height: 1.5;">
+          💡 Belanja min. Rp 200.000 dapat gratis ongkir ke seluruh Indonesia.
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <footer class="text-center text-muted" style="padding: 2rem 1rem; font-size: 0.85rem;">
+    © 2026 TokoKu. MVP Demo.
+  </footer>
+
+</body>
+</html>

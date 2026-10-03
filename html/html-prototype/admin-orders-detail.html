@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail Order #INV/20261002/0015 — TokoKu</title>
+  <link rel="stylesheet" href="./css/admin.css" />
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <script type="module">
+    import { HTMP } from 'https://cdn.jsdelivr.net/npm/htm-projection@v1.2.2/+esm';
+
+    // ==========================================
+    // P1: PATTERN (Template)
+    // ==========================================
+    const adminLayout = (content) => `
+      <div class="admin-layout">
+        <header class="admin-topbar">
+          <div class="topbar-left">
+            <button class="sidebar-toggle" @click="toggleSidebar">&nbsp;≡&nbsp;</button>
+            <div class="topbar-brand">
+              <span class="topbar-logo">🛍️</span>
+              <span class="topbar-title">TokoKu</span>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <div class="topbar-user">
+              <span class="topbar-user-name">Admin</span>
+              <span class="topbar-user-role">Owner</span>
+            </div>
+          </div>
+        </header>
+        
+        <!-- Sidebar dengan Class Merging v1.2.2 -->
+        <aside class="admin-sidebar" :class="sidebarOpen ? 'is-open' : ''">
+          <div class="sidebar-overlay" :class="sidebarOpen ? 'is-visible' : ''" @click="closeSidebar"></div>
+          <nav class="sidebar-nav">
+            <a href="/admin/dashboard" class="sidebar-link" :class="currentPage === 'dashboard' ? 'is-active' : ''">📊 Dashboard</a>
+            <a href="/admin/products" class="sidebar-link" :class="currentPage === 'products' ? 'is-active' : ''">📦 Produk</a>
+            <a href="/admin/categories" class="sidebar-link" :class="currentPage === 'categories' ? 'is-active' : ''">🏷️ Kategori</a>
+            <a href="/admin/orders" class="sidebar-link" :class="currentPage === 'orders' ? 'is-active' : ''">🛒 Order</a>
+            <a href="/admin/logout" class="sidebar-link sidebar-link-danger">🚪Logout</a>
+          </nav>
+        </aside>
+
+        <main class="admin-content">
+          ${content}
+        </main>
+      </div>
+    `;
+
+    const patterns = {
+      detail: adminLayout(`
+        <!-- HEADER & BREADCRUMB -->
+        <div class="content-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <h1 class="content-title" style="margin-bottom:0.25rem;">Order <span>{{ order.invoice }}</span></h1>
+            <p class="content-subtitle" style="margin:0;">Dibuat pada <span>{{ order.created_at }}</span></p>
+          </div>
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <span class="badge" :class="getBadgeClass(order.status)" style="font-size:1rem; padding:0.5rem 1rem;">
+              {{ order.status }}
+            </span>
+            <a href="/admin/orders" class="btn btn-secondary">Kembali</a>
+          </div>
+        </div>
+
+        <!-- GRID LAYOUT (2 Kolom Desktop, 1 Kolom Mobile) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+          
+          <!-- KOLOM KIRI: INFO & ITEMS -->
+          <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            
+            <!-- INFO PELANGGAN & ALAMAT -->
+            <div class="card">
+              <h2 class="card-title mb-2">Informasi Pelanggan</h2>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div>
+                  <div class="text-muted" style="font-size:0.85rem;">Nama</div>
+                  <div style="font-weight:600;"><span>{{ order.customer.name }}</span></div>
+                  <div class="text-muted" style="font-size:0.85rem; margin-top:0.5rem;">Email / Telepon</div>
+                  <div><span>{{ order.customer.email }}</span></div>
+                  <div><span>{{ order.customer.phone }}</span></div>
+                </div>
+                <div>
+                  <div class="text-muted" style="font-size:0.85rem;">Alamat Pengiriman</div>
+                  <div style="margin-top:0.25rem; line-height:1.5;">
+                    <span>{{ order.shipping.address }}</span><br>
+                    <span>{{ order.shipping.city }}</span>, <span>{{ order.shipping.postal_code }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DAFTAR ITEM -->
+            <div class="card">
+              <h2 class="card-title mb-2">Item Pesanan</h2>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width:60px;">Gambar</th>
+                      <th>Produk</th>
+                      <th>Varian</th>
+                      <th style="text-align:right;">Harga</th>
+                      <th style="text-align:center;">Qty</th>
+                      <th style="text-align:right;">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr :for="item in order.items">
+                      <td>
+                        <img :src="item.image" alt="" style="width:48px; height:48px; object-fit:cover; border-radius:0.375rem; background:#f3f4f6;">
+                      </td>
+                      <td style="font-weight:600;"><span>{{ item.name }}</span></td>
+                      <td><span>{{ item.variant }}</span></td>
+                      <td style="text-align:right;">Rp <span>{{ formatRupiah(item.price) }}</span></td>
+                      <td style="text-align:center;"><span>{{ item.qty }}</span></td>
+                      <td style="text-align:right; font-weight:600;">Rp <span>{{ formatRupiah(item.price * item.qty) }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- KOLOM KANAN: SUMMARY & AKSI -->
+          <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            
+            <!-- RINGKASAN HARGA -->
+            <div class="card">
+              <h2 class="card-title mb-2">Ringkasan Pembayaran</h2>
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="text-muted">Subtotal</span>
+                  <span>Rp <span>{{ formatRupiah(order.subtotal) }}</span></span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="text-muted">Ongkos Kirim</span>
+                  <span>Rp <span>{{ formatRupiah(order.shipping_cost) }}</span></span>
+                </div>
+                <div style="display:flex; justify-content:space-between; color:#16a34a;" :style="order.discount > 0 ? '' : 'display:none;'">
+                  <span>Diskon</span>
+                  <span>- Rp <span>{{ formatRupiah(order.discount) }}</span></span>
+                </div>
+                <div style="border-top:1px solid #e5e7eb; margin:0.5rem 0;"></div>
+                <div style="display:flex; justify-content:space-between; font-size:1.25rem; font-weight:700;">
+                  <span>Total</span>
+                  <span>Rp <span>{{ formatRupiah(order.total) }}</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AKSI STATUS (Muncul berdasarkan status saat ini) -->
+            <div class="card" :style="order.status !== 'delivered' && order.status !== 'cancelled' ? '' : 'display:none;'">
+              <h2 class="card-title mb-2">Update Status</h2>
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                
+                <!-- Tombol Kirim (Muncul jika Paid) -->
+                <button 
+                  class="btn btn-primary" 
+                  :style="order.status === 'paid' ? '' : 'display:none;'"
+                  @click="updateStatus('shipped')"
+                >🚚 Tandai Sudah Dikirim</button>
+
+                <!-- Tombol Selesai (Muncul jika Shipped) -->
+                <button 
+                  class="btn btn-success" 
+                  :style="order.status === 'shipped' ? '' : 'display:none;'"
+                  @click="updateStatus('delivered')"
+                >✅ Tandai Selesai (Diterima)</button>
+
+                <!-- Tombol Batalkan (Muncul jika Pending/Paid) -->
+                <button 
+                  class="btn btn-danger" 
+                  :style="order.status === 'pending' || order.status === 'paid' ? '' : 'display:none;'"
+                  @click="cancelOrder"
+                >❌ Batalkan Order</button>
+
+              </div>
+            </div>
+
+            <!-- TIMELINE STATUS -->
+            <div class="card">
+              <h2 class="card-title mb-2">Riwayat Status</h2>
+              <div style="display:flex; flex-direction:column; gap:1rem; border-left:2px solid #e5e7eb; padding-left:1rem; margin-left:0.5rem;">
+                <div :for="log in order.timeline" style="position:relative;">
+                  <div style="position:absolute; left:-1.35rem; top:0.25rem; width:12px; height:12px; border-radius:50%; background:#3b82f6; border:2px solid #fff;"></div>
+                  <div style="font-weight:600; font-size:0.9rem;"><span>{{ log.status }}</span></div>
+                  <div class="text-muted" style="font-size:0.8rem;"><span>{{ log.time }}</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `)
+    };
+
+    // ==========================================
+    // P2: PROXY (State & Helpers)
+    // ==========================================
+    const proxy = {
+      currentPage: 'orders', // Agar sidebar Order tetap aktif
+      sidebarOpen: false,
+      
+      order: {
+        id: 998,
+        invoice: 'INV/20261002/0015',
+        created_at: '02 Okt 2026, 10:22',
+        status: 'shipped', // Coba ganti ke 'paid' atau 'pending' untuk melihat tombol berubah
+        customer: {
+          name: 'Dewi Lestari',
+          email: 'dewi.lestari@email.com',
+          phone: '0812-3456-7890'
+        },
+        shipping: {
+          address: 'Jl. Melati No. 12, RT 05/RW 02, Kel. Cempaka Putih',
+          city: 'Jakarta Pusat',
+          postal_code: '10510'
+        },
+        items: [
+          { id: 1, name: 'Sepatu Sneakers Aero', variant: 'Hitam 42', price: 459000, qty: 1, image: 'https://picsum.photos/seed/shoe1/100/100' },
+          { id: 2, name: 'Kaos Polos Premium', variant: 'Putih XL', price: 85000, qty: 2, image: 'https://picsum.photos/seed/shirt1/100/100' }
+        ],
+        subtotal: 629000,
+        shipping_cost: 15000,
+        discount: 0,
+        total: 644000,
+        timeline: [
+          { status: 'Order Dibuat', time: '02 Okt 2026, 10:22' },
+          { status: 'Pembayaran Diterima', time: '02 Okt 2026, 10:25' },
+          { status: 'Sedang Dikirim', time: '03 Okt 2026, 09:00' }
+        ]
+      },
+
+      // Helpers
+      formatRupiah: (val) => val.toLocaleString('id-ID'),
+      getBadgeClass: (status) => {
+        const map = {
+          'pending': 'badge-warning',
+          'paid': 'badge-info',
+          'shipped': 'badge-primary',
+          'delivered': 'badge-success',
+          'cancelled': 'badge-danger'
+        };
+        return map[status] || 'badge-muted';
+      }
+    };
+
+    // ==========================================
+    // P3: PROGRAM (Logic)
+    // ==========================================
+    const programs = {
+      toggleSidebar: () => { app.proxy.sidebarOpen = !app.proxy.sidebarOpen; },
+      closeSidebar: () => { app.proxy.sidebarOpen = false; },
+
+      updateStatus: (newStatus) => {
+        if (confirm(`Yakin ingin mengubah status order menjadi "${newStatus}"?`)) {
+          app.proxy.order.status = newStatus;
+          
+          // Tambahkan ke timeline (Simulasi)
+          const now = new Date();
+          const timeString = `${now.getDate()} Okt ${now.getFullYear()}, ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+          
+          const statusLabels = {
+            'shipped': 'Sedang Dikirim',
+            'delivered': 'Pesanan Diterima'
+          };
+
+          app.proxy.order.timeline.push({
+            status: statusLabels[newStatus] || newStatus,
+            time: timeString
+          });
+        }
+      },
+
+      cancelOrder: () => {
+        if (confirm('Yakin ingin membatalkan order ini? Stok akan dikembalikan.')) {
+          app.proxy.order.status = 'cancelled';
+          app.proxy.order.timeline.push({
+            status: 'Order Dibatalkan',
+            time: 'Baru saja'
+          });
+        }
+      }
+    };
+
+    // ==========================================
+    // INITIALIZATION & MOUNT
+    // ==========================================
+    const app = new HTMP('app', patterns.detail);
+    app.setProxy(proxy);
+    app.setProgram(programs);
+    app.mount('app');
+
+    document.title = `Detail Order #${proxy.order.invoice} — TokoKu`;
+  </script>
+</body>
+</html>

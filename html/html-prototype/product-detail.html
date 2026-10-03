@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sepatu Sneakers Aero — TokoKu</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="container">
+      <a href="#" class="navbar-brand">🛍️ TokoKu</a>
+      <nav class="navbar-menu">
+        <a href="#">Katalog</a>
+        <a href="#">Kategori</a>
+        <a href="#">Keranjang (2)</a>
+        <a href="#">Masuk</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="container" style="padding: 2rem 1rem;">
+
+    <!-- Breadcrumb -->
+    <nav class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">
+      <a href="#">Beranda</a> / <a href="#">Sepatu</a> / <span>Sneakers Aero</span>
+    </nav>
+
+    <div class="grid grid-2" style="gap: 2rem;">
+
+      <!-- KOLOM KIRI: GALERI -->
+      <section class="card">
+        <div class="product-gallery">
+          <img class="product-main-image"
+               src="https://picsum.photos/seed/shoe1/600/600"
+               alt="Sepatu Sneakers Aero - Tampak Depan" />
+          <div class="product-thumbnails">
+            <img class="is-active" src="https://picsum.photos/seed/shoe1/120/120" alt="Tampak 1" />
+            <img src="https://picsum.photos/seed/shoe2/120/120" alt="Tampak 2" />
+            <img src="https://picsum.photos/seed/shoe3/120/120" alt="Tampak 3" />
+            <img src="https://picsum.photos/seed/shoe4/120/120" alt="Tampak 4" />
+          </div>
+        </div>
+      </section>
+
+      <!-- KOLOM KANAN: INFO PRODUK -->
+      <section class="stack">
+        <div>
+          <span class="badge badge-success">Tersedia</span>
+          <h1 class="h1" style="margin-top: 0.5rem;">Sepatu Sneakers Aero</h1>
+          <p class="text-muted">oleh <strong>Brand Official</strong> · Terjual 1,2rb+</p>
+        </div>
+
+        <div class="price">Rp 459.000</div>
+
+        <p class="text-muted" style="font-size: 0.9rem;">
+          Sneakers ringan dengan sol empuk, cocok untuk aktivitas harian.
+          Material breathable, desain modern, dan tahan lama.
+        </p>
+
+        <!-- VARIANT 1: WARNA -->
+        <div class="stack">
+          <h3 class="h3">Warna: <span class="text-muted" style="font-weight:400;">Hitam</span></h3>
+          <div class="variant-options">
+            <button class="variant-chip is-active">Hitam</button>
+            <button class="variant-chip">Putih</button>
+            <button class="variant-chip">Abu-abu</button>
+          </div>
+        </div>
+
+        <!-- VARIANT 2: UKURAN -->
+        <div class="stack">
+          <h3 class="h3">Ukuran: <span class="text-muted" style="font-weight:400;">42</span></h3>
+          <div class="variant-options">
+            <button class="variant-chip">39</button>
+            <button class="variant-chip">40</button>
+            <button class="variant-chip">41</button>
+            <button class="variant-chip is-active">42</button>
+            <button class="variant-chip">43</button>
+          </div>
+        </div>
+
+        <!-- VARIANT 3: TIPE -->
+        <div class="stack">
+          <h3 class="h3">Tipe: <span class="text-muted" style="font-weight:400;">Low Cut</span></h3>
+          <div class="variant-options">
+            <button class="variant-chip is-active">Low Cut</button>
+            <button class="variant-chip">Mid Cut (+Rp 30.000)</button>
+            <button class="variant-chip">High Cut (+Rp 50.000)</button>
+          </div>
+        </div>
+
+        <!-- STOK & QTY -->
+        <div class="flex" style="align-items: center; gap: 1.5rem;">
+          <div>
+            <div class="text-muted" style="font-size: 0.85rem;">Stok tersedia</div>
+            <div class="h3">24 buah</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size: 0.85rem; margin-bottom: 0.25rem;">Jumlah</div>
+            <div class="qty-control">
+              <button>−</button>
+              <input type="text" value="1" readonly />
+              <button>+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="flex" style="flex-wrap: wrap;">
+          <button class="btn btn-outline" style="flex: 1;">+ Keranjang</button>
+          <button class="btn btn-primary" style="flex: 1;">Beli Sekarang</button>
+        </div>
+
+        <!-- INFO TAMBAHAN -->
+        <div class="card" style="margin-top: 0.5rem;">
+          <div class="stack" style="gap: 0.5rem; font-size: 0.9rem;">
+            <div>🚚 Gratis ongkir ke Jakarta (min. belanja Rp 200.000)</div>
+            <div>🔄 Garansi retur 7 hari</div>
+            <div>✅ 100% Original</div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- DESKRIPSI LENGKAP -->
+    <section class="card" style="margin-top: 2rem;">
+      <h2 class="h2" style="margin-bottom: 0.75rem;">Deskripsi Produk</h2>
+      <p class="text-muted" style="line-height: 1.7;">
+        Sepatu Sneakers Aero dirancang untuk kenyamanan maksimal sepanjang hari.
+        Dilengkapi teknologi sol EVA yang empuk dan upper mesh breathable yang
+        menjaga sirkulasi udara. Cocok untuk jogging ringan, jalan-jalan, maupun
+        gaya kasual sehari-hari. Material premium dengan jahitan rapi memastikan
+        daya tahan jangka panjang.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="text-center text-muted" style="padding: 2rem 1rem; font-size: 0.85rem;">
+    © 2026 TokoKu. MVP Demo.
+  </footer>
+
+</body>
+</html>
