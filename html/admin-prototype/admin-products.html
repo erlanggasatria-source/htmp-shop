@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daftar Produk — TokoKu</title>
+  <link rel="stylesheet" href="./css/admin.css" />
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <script type="module">
+    import { HTMP } from 'https://cdn.jsdelivr.net/npm/htm-projection@v1.2.2/+esm';
+
+    // ==========================================
+    // P1: PATTERN (Template)
+    // ==========================================
+    const adminLayout = (content) => `
+      <div class="admin-layout">
+        <header class="admin-topbar">
+          <div class="topbar-left">
+            <button class="sidebar-toggle" @click="toggleSidebar">&nbsp;≡&nbsp;</button>
+            <div class="topbar-brand">
+              <span class="topbar-logo">🛍️</span>
+              <span class="topbar-title">TokoKu</span>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <div class="topbar-user">
+              <span class="topbar-user-name">Admin</span>
+              <span class="topbar-user-role">Owner</span>
+            </div>
+          </div>
+        </header>
+        
+        <!-- Sidebar dengan Class Merging v1.2.2 -->
+        <aside class="admin-sidebar" :class="sidebarOpen ? 'is-open' : ''">
+          <div class="sidebar-overlay" :class="sidebarOpen ? 'is-visible' : ''" @click="closeSidebar"></div>
+          <nav class="sidebar-nav">
+            <a href="/admin/dashboard" class="sidebar-link" :class="currentPage === 'dashboard' ? 'is-active' : ''">📊 Dashboard</a>
+            <a href="/admin/products" class="sidebar-link" :class="currentPage === 'products' ? 'is-active' : ''">📦 Produk</a>
+            <a href="/admin/categories" class="sidebar-link" :class="currentPage === 'categories' ? 'is-active' : ''">🏷️ Kategori</a>
+            <a href="/admin/orders" class="sidebar-link" :class="currentPage === 'orders' ? 'is-active' : ''">🛒 Order</a>
+            <a href="/admin/logout" class="sidebar-link sidebar-link-danger">🚪Logout</a>
+          </nav>
+        </aside>
+
+        <main class="admin-content">
+          ${content}
+        </main>
+      </div>
+    `;
+
+    const patterns = {
+      products: adminLayout(`      
+        <div class="content-header">
+          <h1 class="content-title">Daftar Produk</h1>
+          <p class="content-subtitle">Kelola semua produk toko Anda</p>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="card mb-3" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <input 
+            type="text" 
+            class="form-input" 
+            placeholder="Cari nama produk..." 
+            :value="search_query" 
+            @input="updateProxy(e, 'search_query')" 
+            style="max-width:300px;"
+          >
+          <a href="/admin/products/create" class="btn btn-primary">➕ Tambah Produk</a>
+        </div>
+
+        <!-- TABLE LIST -->
+        <section class="card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">Gambar</th>
+                  <th>Nama Produk</th>
+                  <th>Kategori</th>
+                  <th>Stok</th>
+                  <th>Harga</th>
+                  <th>Status</th>
+                  <th style="width: 150px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr :for="product in paged">
+                  <td>
+                    <img :src="product.image" :alt="product.name" style="width: 48px; height: 48px; object-fit: cover; border-radius: 0.375rem; background: #26282de8; color: transparent; animation: opac 1.2s;">
+                  </td>
+                  <td>
+                    <div style="font-weight: 600; color: #111827;">{{ product.name }}</div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">ID: {{ product.id }}</div>
+                  </td>
+                  <td>{{ product.category }}</td>
+                  <td>
+                    <span :class="product.stock <= 5 ? 'text-danger' : ''" style="font-weight: 600;">{{ product.stock }}</span>
+                  </td>
+                  <td>Rp {{ formatRupiah(product.price) }}</td>
+                  <td>
+                    <span class="badge" :class="product.status === 'active' ? 'badge-success' : 'badge-muted'">
+                      {{ product.status === 'active' ? 'Aktif' : 'Non-Aktif' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div style="display:flex; gap:0.5rem;">
+                      <a :href="'/admin/products/edit/' + product.id" class="btn btn-sm btn-secondary">Edit</a>
+                      <button class="btn btn-sm btn-danger" @click="deleteProduct(product.id)">Hapus</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 2rem; color: #6b7280;" :style="paged.length === 0 ? '' : 'display:none;' " >Tidak ada produk ditemukan.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- PAGINATION CONTROLS (v1.2.2 Standard) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; flex-wrap:wrap; gap:1rem;">
+            <div class="text-muted" style="font-size:0.9rem;">
+              Menampilkan <span>{{ paged.length }}</span> dari <span>{{ filtered.length }}</span> data 
+              (Halaman <span>{{ current_page }}</span> dari <span>{{ total_pages }}</span>)
+            </div>
+            
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <button 
+                class="btn btn-sm" 
+                :class="current_page === 1 ? 'btn-secondary' : 'btn-primary'"
+                :disabled="current_page === 1"
+                @click="prevPage"
+              >Prev</button>
+              
+              <button 
+                class="btn btn-sm"
+                :for="p in page_numbers"
+                :class="p === current_page ? 'btn-primary' : 'btn-secondary'"
+                @click="changePage(p)"
+                :disabled="p === '...'"
+                style="min-width: 36px;"
+              >{{ p }}</button>
+
+              <button 
+                class="btn btn-sm" 
+                :class="current_page === total_pages ? 'btn-secondary' : 'btn-primary'"
+                :disabled="current_page === total_pages"
+                @click="nextPage"
+              >Next</button>
+            </div>
+          </div>
+        </section>    
+      `)
+    };
+
+    // ==========================================
+    // P2: PROXY (State)
+    // ==========================================
+    const proxy = {
+      currentPage: 'products',
+      sidebarOpen: false,
+      
+      search_query: '',
+      filtered: [],
+      paged: [],
+      page_numbers: [],
+      current_page: 1,
+      per_page: 10,
+      total_pages: 1,
+
+      products: [], // Data mentah
+      formatRupiah: (val) => val.toLocaleString('id-ID'),
+    };
+
+    // ==========================================
+    // P3: PROGRAM (Logic)
+    // ==========================================
+    const programs = {
+      toggleSidebar: () => { app.proxy.sidebarOpen = !app.proxy.sidebarOpen; },
+      closeSidebar: () => { app.proxy.sidebarOpen = false; },      
+
+      applyFilter: () => {
+        const query = app.proxy.search_query.toLowerCase();
+        if (!query) {
+          app.proxy.filtered = app.proxy.products;
+        } else {
+          app.proxy.filtered = app.proxy.products.filter(c => c.name.toLowerCase().includes(query));
+        }
+        app.proxy.current_page = 1; 
+        app.programs.applyPagination();
+      },
+
+      applyPagination: () => {
+        const start = (app.proxy.current_page - 1) * app.proxy.per_page;
+        const end = start + app.proxy.per_page;
+        app.proxy.paged = app.proxy.filtered.slice(start, end);
+        app.proxy.total_pages = Math.ceil(app.proxy.filtered.length / app.proxy.per_page) || 1;
+        app.programs.updatePageNumbers();
+      },
+
+      updatePageNumbers: () => {
+        const total = app.proxy.total_pages;
+        const current = app.proxy.current_page;
+        let pages = [];
+        if (total <= 7) {
+          for (let i = 1; i <= total; i++) pages.push(i);
+        } else {
+          pages.push(1);
+          if (current > 3) pages.push('...');
+          let start = Math.max(2, current - 1);
+          let end = Math.min(total - 1, current + 1);
+          for (let i = start; i <= end; i++) pages.push(i);
+          if (current < total - 2) pages.push('...');
+          pages.push(total);
+        }
+        app.proxy.page_numbers = pages;
+      },
+
+      prevPage: () => { app.programs.changePage(app.proxy.current_page - 1); },
+      nextPage: () => { app.programs.changePage(app.proxy.current_page + 1); },
+      
+      changePage: (page) => {
+        if (page < 1 || page > app.proxy.total_pages || page === '...') return;
+        app.proxy.current_page = page;
+        app.programs.applyPagination();
+      },
+
+      updateProxy: (e, name) => {
+        app.proxy[name] = e.target.value;
+        if (name === 'search_query') app.programs.applyFilter();
+      },
+
+      deleteProduct: (id) => {
+        if (confirm('Yakin ingin menghapus produk ini?')) {
+          app.proxy.products = app.proxy.products.filter(p => p.id !== id);
+          app.programs.applyFilter();
+        }
+      }
+    };
+
+    // ==========================================
+    // INITIALIZATION & MOUNT
+    // ==========================================
+    const app = new HTMP('app', patterns.products);
+    app.setProxy(proxy);
+    app.setProgram(programs);
+    app.mount('app');
+
+    // 1. GENERATE MOCK DATA (Simulasi 45 produk dari server)
+    const categories = ['Sepatu', 'Pakaian', 'Aksesoris', 'Tas'];
+    for (let i = 1; i <= 99; i++) {
+      app.proxy.products.push({
+        id: i,
+        name: `Produk Contoh ${i}`,
+        category: categories[i % 4],
+        stock: Math.floor(Math.random() * 50),
+        price: 50000 + (i * 15000),
+        status: i % 7 === 0 ? 'inactive' : 'active',
+        image: `https://picsum.photos/seed/prod${i}/100/100`
+      });
+    }
+
+    // 2. Inisiasi Lapisan Data
+    app.programs.applyFilter();
+    document.title = 'Daftar Produk — TokoKu';
+  </script>
+</body>
+</html>

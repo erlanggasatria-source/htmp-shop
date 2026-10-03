@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Admin — TokoKu</title>
+  <link rel="stylesheet" href="./css/admin.css" />
+</head>
+<body>
+  <!-- APP WRAPPER (Akan di-takeover oleh HTMP) -->
+  <div id="app">
+    <div class="admin-layout">
+      <!-- TOPBAR -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+          <div class="topbar-brand">
+            <span class="topbar-logo">🛍️</span>
+            <span class="topbar-title">TokoKu</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-user">
+            <span class="topbar-user-name">Admin</span>
+            <span class="topbar-user-role">Owner</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- SIDEBAR OVERLAY -->
+      <div class="sidebar-overlay"></div>
+
+      <!-- SIDEBAR -->
+      <aside class="admin-sidebar">
+        <nav class="sidebar-nav">
+          <a href="/admin/dashboard" class="sidebar-link is-active">
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-text">Dashboard</span>
+          </a>
+          <a href="/admin/products" class="sidebar-link">
+            <span class="sidebar-icon">📦</span>
+            <span class="sidebar-text">Produk</span>
+          </a>
+          <a href="/admin/categories" class="sidebar-link">
+            <span class="sidebar-icon">🏷️</span>
+            <span class="sidebar-text">Kategori</span>
+          </a>
+          <a href="/admin/orders" class="sidebar-link">
+            <span class="sidebar-icon">🛒</span>
+            <span class="sidebar-text">Order</span>
+          </a>
+          <a href="/admin/logout" class="sidebar-link sidebar-link-danger">
+            <span class="sidebar-icon">🚪</span>
+            <span class="sidebar-text">Logout</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="admin-content">
+        
+        <div class="content-header">
+          <h1 class="content-title">Dashboard</h1>
+          <p class="content-subtitle">Ringkasan toko Anda</p>
+        </div>
+
+        <!-- ISLAND 1: STATS -->
+        <section class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-body">
+              <div class="stat-value">124</div>
+              <div class="stat-label">Total Produk</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-body">
+              <div class="stat-value">342</div>
+              <div class="stat-label">Order Bulan Ini</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"></div>
+            <div class="stat-body">
+              <div class="stat-value">Rp 48.750.000</div>
+              <div class="stat-label">Pendapatan Bulan Ini</div>
+            </div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-icon">️</div>
+            <div class="stat-body">
+              <div class="stat-value">7</div>
+              <div class="stat-label">Low Stock</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DASHBOARD GRID -->
+        <div class="dashboard-grid">
+
+          <!-- ISLAND 2: RECENT ORDERS -->
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Order Terbaru</h2>
+              <a href="/admin/orders" class="card-link">Lihat Semua →</a>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>No. Order</th>
+                    <th>Pembeli</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                <tr id="recent_orders-1001">
+                    <td><a href="/admin/orders/1001">INV/20260929/0018</a></td>
+                    <td>Budi Santoso</td>
+                    <td>Rp 459.000</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                    <td>29 Sep 2026, 14:32</td>
+                    <td><a class="btn btn-sm btn-secondary" href="/admin/orders/1001">Detail</a></td>
+                  </tr><tr id="recent_orders-1000">
+                    <td><a href="/admin/orders/1000">INV/20260929/0017</a></td>
+                    <td>Siti Aminah</td>
+                    <td>Rp 1.289.000</td>
+                    <td><span class="badge badge-success">Paid</span></td>
+                    <td>29 Sep 2026, 13:15</td>
+                    <td><a class="btn btn-sm btn-secondary" href="/admin/orders/1000">Detail</a></td>
+                  </tr><tr id="recent_orders-999">
+                    <td><a href="/admin/orders/999">INV/20260929/0016</a></td>
+                    <td>Ahmad Rizki</td>
+                    <td>Rp 289.000</td>
+                    <td><span class="badge badge-info">Shipped</span></td>
+                    <td>29 Sep 2026, 11:47</td>
+                    <td><a class="btn btn-sm btn-secondary" href="/admin/orders/999">Detail</a></td>
+                  </tr><tr id="recent_orders-998">
+                    <td><a href="/admin/orders/998">INV/20260929/0015</a></td>
+                    <td>Dewi Lestari</td>
+                    <td>Rp 748.000</td>
+                    <td><span class="badge badge-success">Delivered</span></td>
+                    <td>29 Sep 2026, 10:22</td>
+                    <td><a class="btn btn-sm btn-secondary" href="/admin/orders/998">Detail</a></td>
+                  </tr><tr id="recent_orders-997">
+                    <td><a href="/admin/orders/997">INV/20260928/0014</a></td>
+                    <td>Eko Prasetyo</td>
+                    <td>Rp 1.158.000</td>
+                    <td><span class="badge badge-danger">Cancelled</span></td>
+                    <td>28 Sep 2026, 19:05</td>
+                    <td><a class="btn btn-sm btn-secondary" href="/admin/orders/997">Detail</a></td>
+                  </tr></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- ISLAND 3: LOW STOCK -->
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">⚠️ Stok Menipis</h2>
+              <span class="card-badge">7 varian</span>
+            </div>
+            <div class="low-stock-list">
+              
+            <div class="low-stock-item" id="low_stock_items-0">
+                <div class="low-stock-info">
+                  <div class="low-stock-name">Sepatu Sneakers Aero</div>
+                  <div class="low-stock-variant">Hitam 42</div>
+                </div>
+                <div class="low-stock-qty">3</div>
+                <a class="btn btn-sm" href="/admin/products/edit/12">Restock</a>
+              </div><div class="low-stock-item" id="low_stock_items-1">
+                <div class="low-stock-info">
+                  <div class="low-stock-name">Tas Ransel Urban</div>
+                  <div class="low-stock-variant">Navy Large</div>
+                </div>
+                <div class="low-stock-qty">5</div>
+                <a class="btn btn-sm" href="/admin/products/edit/8">Restock</a>
+              </div><div class="low-stock-item" id="low_stock_items-2">
+                <div class="low-stock-info">
+                  <div class="low-stock-name">Kaos Polos Premium</div>
+                  <div class="low-stock-variant">Putih XL</div>
+                </div>
+                <div class="low-stock-qty">2</div>
+                <a class="btn btn-sm" href="/admin/products/edit/5">Restock</a>
+              </div><div class="low-stock-item" id="low_stock_items-3">
+                <div class="low-stock-info">
+                  <div class="low-stock-name">Topi Baseball Classic</div>
+                  <div class="low-stock-variant">Hitam</div>
+                </div>
+                <div class="low-stock-qty">4</div>
+                <a class="btn btn-sm" href="/admin/products/edit/3">Restock</a>
+              </div></div>
+          </section>
+
+        </div>
+
+        <!-- QUICK ACTIONS (Non-reactive, hardcoded) -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Aksi Cepat</h2>
+          </div>
+          <div class="quick-actions">
+            <a href="/admin/products/create" class="quick-action-btn">
+              <span class="quick-action-icon">➕</span>
+              <span>Tambah Produk</span>
+            </a>
+            <a href="/admin/orders" class="quick-action-btn">
+              <span class="quick-action-icon">🛒</span>
+              <span>Kelola Order</span>
+            </a>
+            <a href="/admin/categories" class="quick-action-btn">
+              <span class="quick-action-icon">🏷️</span>
+              <span>Kategori</span>
+            </a>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- JSON INITIAL DATA (Disuntikkan PHP dari Backend) -->
+  <script type="application/json" id="initial-data">
+  {
+    "stats": {
+      "total_products": 124,
+      "orders_this_month": 342,
+      "revenue_this_month": 48750000,
+      "low_stock_count": 7
+    },
+    "recent_orders": [
+      { "id": 1001, "order_number": "INV/20260929/0018", "customer_name": "Budi Santoso", "total": 459000, "status": "pending", "created_at": "29 Sep 2026, 14:32" },
+      { "id": 1000, "order_number": "INV/20260929/0017", "customer_name": "Siti Aminah", "total": 1289000, "status": "paid", "created_at": "29 Sep 2026, 13:15" },
+      { "id": 999, "order_number": "INV/20260929/0016", "customer_name": "Ahmad Rizki", "total": 289000, "status": "shipped", "created_at": "29 Sep 2026, 11:47" },
+      { "id": 998, "order_number": "INV/20260929/0015", "customer_name": "Dewi Lestari", "total": 748000, "status": "delivered", "created_at": "29 Sep 2026, 10:22" },
+      { "id": 997, "order_number": "INV/20260928/0014", "customer_name": "Eko Prasetyo", "total": 1158000, "status": "cancelled", "created_at": "28 Sep 2026, 19:05" }
+    ],
+    "low_stock_items": [
+      { "product_id": 12, "product_name": "Sepatu Sneakers Aero", "variant_name": "Hitam 42", "stock": 3 },
+      { "product_id": 8, "product_name": "Tas Ransel Urban", "variant_name": "Navy Large", "stock": 5 },
+      { "product_id": 5, "product_name": "Kaos Polos Premium", "variant_name": "Putih XL", "stock": 2 },
+      { "product_id": 3, "product_name": "Topi Baseball Classic", "variant_name": "Hitam", "stock": 4 }
+    ]
+  }
+  </script>
+  <!-- HTMP & ROUTER LOGIC -->
+  <script type="module">
+    import { HTMP } from 'https://cdn.jsdelivr.net/npm/htm-projection@v1.2.1/+esm';
+
+    // 1.setup pattern
+    const pattern = {
+      dashboard: `<div class="admin-layout">
+
+      <!-- TOPBAR -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+          <div class="topbar-brand">
+            <span class="topbar-logo">🛍️</span>
+            <span class="topbar-title">TokoKu</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-user">
+            <span class="topbar-user-name">Admin</span>
+            <span class="topbar-user-role">Owner</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- SIDEBAR OVERLAY -->
+      <div class="sidebar-overlay"></div>
+
+      <!-- SIDEBAR -->
+      <aside class="admin-sidebar">
+        <nav class="sidebar-nav">
+          <a href="/admin/dashboard" class="sidebar-link is-active">
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-text">Dashboard</span>
+          </a>
+          <a href="/admin/products" class="sidebar-link">
+            <span class="sidebar-icon">📦</span>
+            <span class="sidebar-text">Produk</span>
+          </a>
+          <a href="/admin/categories" class="sidebar-link">
+            <span class="sidebar-icon">🏷️</span>
+            <span class="sidebar-text">Kategori</span>
+          </a>
+          <a href="/admin/orders" class="sidebar-link">
+            <span class="sidebar-icon">🛒</span>
+            <span class="sidebar-text">Order</span>
+          </a>
+          <a href="/admin/logout" class="sidebar-link sidebar-link-danger">
+            <span class="sidebar-icon">🚪</span>
+            <span class="sidebar-text">Logout</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="admin-content">
+        
+        <div class="content-header">
+          <h1 class="content-title">Dashboard</h1>
+          <p class="content-subtitle">Ringkasan toko Anda</p>
+        </div>
+
+        <!-- ISLAND 1: STATS -->
+        <section class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-body">
+              <div class="stat-value">{{ stats.total_products }}</div>
+              <div class="stat-label">Total Produk</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-body">
+              <div class="stat-value">{{ stats.orders_this_month }}</div>
+              <div class="stat-label">Order Bulan Ini</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"></div>
+            <div class="stat-body">
+              <div class="stat-value">Rp {{ formatRupiah(stats.revenue_this_month) }}</div>
+              <div class="stat-label">Pendapatan Bulan Ini</div>
+            </div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-icon">️</div>
+            <div class="stat-body">
+              <div class="stat-value">{{ stats.low_stock_count }}</div>
+              <div class="stat-label">Low Stock</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DASHBOARD GRID -->
+        <div class="dashboard-grid">
+
+          <!-- ISLAND 2: RECENT ORDERS -->
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Order Terbaru</h2>
+              <a href="/admin/orders" class="card-link">Lihat Semua →</a>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>No. Order</th>
+                    <th>Pembeli</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr :for="order in recent_orders">
+                    <td><a :href="'/admin/orders/' + order.id">{{ order.order_number }}</a></td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>Rp {{ formatRupiah(order.total) }}</td>
+                    <td><span :class="'badge badge-' + getStatusBadge(order.status)">{{ capitalize(order.status) }}</span></td>
+                    <td>{{ order.created_at }}</td>
+                    <td><a :href="'/admin/orders/' + order.id" class="btn btn-sm btn-secondary">Detail</a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- ISLAND 3: LOW STOCK -->
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">⚠️ Stok Menipis</h2>
+              <span class="card-badge">{{ stats.low_stock_count }} varian</span>
+            </div>
+            <div class="low-stock-list">
+              <div :for="item in low_stock_items" class="low-stock-item">
+                <div class="low-stock-info">
+                  <div class="low-stock-name">{{ item.product_name }}</div>
+                  <div class="low-stock-variant">{{ item.variant_name }}</div>
+                </div>
+                <div class="low-stock-qty">{{ item.stock }}</div>
+                <a :href="'/admin/products/edit/' + item.product_id" class="btn btn-sm">Restock</a>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- QUICK ACTIONS (Non-reactive, hardcoded) -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Aksi Cepat</h2>
+          </div>
+          <div class="quick-actions">
+            <a href="/admin/products/create" class="quick-action-btn">
+              <span class="quick-action-icon">➕</span>
+              <span>Tambah Produk</span>
+            </a>
+            <a href="/admin/orders" class="quick-action-btn">
+              <span class="quick-action-icon">🛒</span>
+              <span>Kelola Order</span>
+            </a>
+            <a href="/admin/categories" class="quick-action-btn">
+              <span class="quick-action-icon">🏷️</span>
+              <span>Kategori</span>
+            </a>
+          </div>
+        </section>
+
+      </main>
+    </div>
+    `};
+
+    // 3. Inisialisasi HTMP       
+
+    // 4. Set Proxy Data & Helpers
+    // --- proxy for dashboard ---
+    const proxyDashboard = {
+      stats: {
+        total_products: 0,
+        orders_this_month: 0,
+        revenue_this_month: 0,
+        low_stock_count: 0
+      },
+      recent_orders: [],
+      low_stock_items: [],
+    }
+    // --- proxy for helper ---
+    const proxyHelper = {
+      formatRupiah: (val) => val.toLocaleString('id-ID'),
+      capitalize: (str) => str.charAt(0).toUpperCase() + str.slice(1),
+      getStatusBadge: (status) => {
+        const map = { pending: 'warning', paid: 'success', shipped: 'info', delivered: 'success', cancelled: 'danger' };
+        return map[status] || 'muted';
+      }
+    }
+    // --- proxy for other ... menyusul iterasi tiap page
+
+    // 5. helper utk update proxy baik spa maupun hardcore url
+    
+    // --- helper update proxy
+    const updateDashboard = (data) => {
+      app.proxy.stats = data.stats;
+      app.proxy.recent_orders = data.recent_orders;
+      app.proxy.low_stock_items = data.low_stock_items;
+    }
+    //  inisiasi awal tambahkan fungsi lihat url, nanti tambahkan anggap sudah ada
+    const page = window.location.pathname.indexOf('dashboard') > 0 ? 'dashboard' : 'none';
+    const app = new HTMP('app', pattern[page]);
+
+    app.setProxy({
+      ...proxyDashboard,
+      ...proxyHelper,
+      // iterasi nanti setiap page baru akan bertambah      
+    });        
+    
+    // inisiasi hanya sekali saat sebelum takeover
+    if (page === 'dashboard'){      
+      document.title = 'Dashboard Admin — TokoKu';      
+      updateDashboard(JSON.parse(document.getElementById('initial-data').textContent));      
+    }
+
+    // 6. Mount & Update Title
+    app.mount('app');
+        
+
+    // 7. Konsep Router (Intercept Link & Swap Template)
+    // Nanti ini akan dipisah ke file `admin-router.js`
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="/admin/"]');
+      if (link && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        const targetRoute = link.getAttribute('href');
+        
+        // Logika SPA:
+        // 1. fetch(targetRoute + '?format=json')
+        // 2. appEl.innerHTML = templates[routeName]
+        // 3. app = new HTMP('app', templates[routeName])
+        // 4. app.setProxy(fetchedJson)
+        // 5. app.mount('app')
+        // 6. history.pushState({}, '', targetRoute)
+        
+        console.log('Intercepted route:', targetRoute, '(SPA swap logic will go here)');
+      }
+    });
+  </script>
+
+  <!-- Admin UI Script (Sidebar Toggle) -->
+  <!-- <script src="./js/admin-ui.js"></script> -->>
+
+</body>
+</html>
