@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Katalog Produk — TokoKu</title>
+  <link rel="stylesheet" href="./css/public.css" />
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <script type="module">
+    import { HTMP } from 'https://cdn.jsdelivr.net/npm/htm-projection@v1.2.2/+esm';
+
+    // ==========================================
+    // P1: PATTERN (Template)
+    // ==========================================
+    const publicLayout = (content) => `
+      <div class="public-layout">
+        <!-- NAVBAR -->
+        <header class="public-navbar">
+          <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+              <span>️🛍️</span> TokoKu
+            </a>
+            
+            <!-- Search Bar -->
+            <input 
+              type="text" 
+              class="search-input" 
+              placeholder="Cari produk..." 
+              :value="search_query" 
+              @input="updateProxy(e, 'search_query')"
+            >
+
+            <!-- Cart Icon -->
+            <a href="/cart" class="cart-icon-wrapper">
+              <span style="font-size:1.5rem;">🛒</span>
+              <span 
+                class="cart-badge"
+                :style="cart_count > 0 ? '' : 'display:none;'"
+              >
+                <span>{{ cart_count }}</span>
+              </span>
+            </a>
+          </div>
+        </header>
+
+        <main class="public-main">
+          ${content}
+        </main>
+        
+        <!-- FOOTER -->
+        <footer class="public-footer">
+          &copy; 2026 TokoKu. Dibuat dengan ❤️ dan HTMP.
+        </footer>
+      </div>
+    `;
+
+    const patterns = {
+      catalog: publicLayout(`
+        <!-- FILTER KATEGORI (Horizontal Scroll / Pills) -->
+        <div class="category-scroll mb-3">
+          <button 
+            class="chip" 
+            :class="selected_category === 'all' ? 'chip-active' : ''"
+            @click="updateCategory('all')"
+          >Semua</button>
+          
+          <button 
+            :for="cat in categories"
+            class="chip" 
+            :class="selected_category === cat.slug ? 'chip-active' : ''"
+            @click="updateCategory(cat)"
+          >{{ cat.name }}</button>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="product-grid">
+          <a :for="product in paged" :href="'/product/' + product.id">
+            <div class="product-card">
+              <!-- Image with Fade-in & Placeholder -->
+              <div class="product-image-wrapper">
+                <img :src="product.image" alt="" class="product-image">
+                <span 
+                  class="stock-badge"
+                  :style="product.stock <= 5 && product.stock > 0 ? '' : 'display:none;'"
+                >Sisa <span>{{ product.stock }}</span></span>
+              </div>
+              
+              <div class="product-info">
+                <h3 class="product-title">
+                  <span>{{ product.name }}</span>
+                </h3>
+                <div class="product-price">
+                  Rp <span>{{ formatRupiah(product.price) }}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div style="text-align:center; padding:3rem 1rem; color:#6b7280;" :style="paged.length === 0 ? '' : 'display:none;'">
+          <div style="font-size:3rem; margin-bottom:1rem;">🔍</div>
+          <h3 style="margin:0 0 0.5rem 0; color:#111827;">Produk tidak ditemukan</h3>
+          <p style="margin:0;">Coba ubah kata kunci atau kategori pencarian Anda.</p>
+        </div>
+
+        <!-- PAGINATION -->
+        <div style="display:flex; justify-content:center; margin-top:2rem;" :style="total_pages > 1 ? '' : 'display:none;'">
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button 
+              class="btn-pagination" 
+              :disabled="current_page === 1"
+              @click="prevPage"
+            >Prev</button>
+            
+            <span class="text-muted" style="font-size:0.9rem; padding:0 0.5rem;">
+              Halaman <span>{{ current_page }}</span> dari <span>{{ total_pages }}</span>
+            </span>
+
+            <button 
+              class="btn-pagination" 
+              :disabled="current_page === total_pages"
+              @click="nextPage"
+            >Next</button>
+          </div>
+        </div>
+      `)
+    };
+
+    // ==========================================
+    // P2: PROXY (State & Helpers)
+    // ==========================================
+    const proxy = {
+      search_query: '',
+      selected_category: 'all',
+      cart_count: 3, 
+      
+      filtered: [],
+      paged: [],
+      current_page: 1,
+      per_page: 8, 
+      total_pages: 1,
+
+      categories: [
+        { name: 'Sepatu', slug: 'sepatu' },
+        { name: 'Pakaian', slug: 'pakaian' },
+        { name: 'Aksesoris', slug: 'aksesoris' },
+        { name: 'Elektronik', slug: 'elektronik' }
+      ],
+      
+      products: [],
+
+      formatRupiah: (val) => val.toLocaleString('id-ID')
+    };
+
+    // ==========================================
+    // P3: PROGRAM (Logic)
+    // ==========================================
+    const programs = {
+      updateProxy: (e, name) => {
+        app.proxy[name] = e.target.value;
+        if (name === 'search_query') {
+          app.proxy.current_page = 1;
+          app.programs.applyFilter();
+        }
+      },
+
+      updateCategory: (val) => {
+        app.proxy.selected_category = (val === 'all') ? 'all' : val.slug;
+        app.proxy.current_page = 1;
+        app.programs.applyFilter();
+      },
+
+      applyFilter: () => {
+        const query = app.proxy.search_query.toLowerCase();
+        const cat = app.proxy.selected_category;
+
+        app.proxy.filtered = app.proxy.products.filter(p => {
+          const matchSearch = p.name.toLowerCase().includes(query);
+          const matchCat = cat === 'all' || p.category_slug === cat;
+          return matchSearch && matchCat;
+        });
+
+        app.programs.applyPagination();
+      },
+
+      applyPagination: () => {
+        const start = (app.proxy.current_page - 1) * app.proxy.per_page;
+        const end = start + app.proxy.per_page;
+        app.proxy.paged = app.proxy.filtered.slice(start, end);
+        app.proxy.total_pages = Math.ceil(app.proxy.filtered.length / app.proxy.per_page) || 1;
+      },
+
+      prevPage: () => {
+        if (app.proxy.current_page > 1) {
+          app.proxy.current_page--;
+          app.programs.applyPagination();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      },
+
+      nextPage: () => {
+        if (app.proxy.current_page < app.proxy.total_pages) {
+          app.proxy.current_page++;
+          app.programs.applyPagination();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    };
+
+    // ==========================================
+    // INITIALIZATION & MOUNT
+    // ==========================================
+    const app = new HTMP('app', patterns.catalog);
+    app.setProxy(proxy);
+    app.setProgram(programs);
+    app.mount('app');
+
+    // Generate Mock Data (60 Produk)
+    const catSlugs = ['sepatu', 'pakaian', 'aksesoris', 'elektronik'];
+    for (let i = 1; i <= 60; i++) {
+      app.proxy.products.push({
+        id: i,
+        name: `Produk Publik Keren ${i} dengan Nama yang Agak Panjang untuk Testing Line Clamp`,
+        category_slug: catSlugs[i % 4],
+        price: 75000 + (i * 12000),
+        stock: Math.floor(Math.random() * 30),
+        image: `https://picsum.photos/seed/pub${i}/400/400`
+      });
+    }
+
+    app.programs.applyFilter();
+    document.title = 'Katalog Produk — TokoKu';
+  </script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sepatu Sneakers Aero — TokoKu</title>
+  <link rel="stylesheet" href="./css/public.css" />
+  <style>
+    /* Tambahan khusus untuk notifikasi toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #111827;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      z-index: 100;
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translate(-50%, 20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <script type="module">
+    import { HTMP } from 'https://cdn.jsdelivr.net/npm/htm-projection@v1.2.2/+esm';
+
+    // ==========================================
+    // P1: PATTERN (Template)
+    // ==========================================
+    const publicLayout = (content) => `
+      <div class="public-layout">
+        <header class="public-navbar">
+          <div class="navbar-container">
+            <a href="/catalog" class="navbar-brand"><span>️🛍️</span> TokoKu</a>
+            <a href="/cart" class="cart-icon-wrapper">
+              <span style="font-size:1.5rem;">🛒</span>
+              <span class="cart-badge" :style="cart_count > 0 ? '' : 'display:none;'">
+                <span>{{ cart_count }}</span>
+              </span>
+            </a>
+          </div>
+        </header>
+        <main class="public-main">
+          <a href="/catalog" class="text-muted" style="font-size:0.875rem; display:inline-block; margin-bottom:1rem;">&larr; Kembali ke Katalog</a>
+          ${content}
+        </main>
+        <footer class="public-footer">&copy; 2026 TokoKu. Dibuat dengan ❤️ dan HTMP.</footer>
+      </div>
+    `;
+
+    const patterns = {
+      detail: publicLayout(`
+        <div class="detail-grid">
+          
+          <!-- KOLOM KIRI: GALERI GAMBAR -->
+          <div>
+            <!-- Main Image -->
+            <div class="detail-image-main mb-2">
+              <img :src="main_image" alt="" class="product-image" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            
+            <!-- Thumbnails (Horizontal Scroll di Mobile) -->
+            <div class="category-scroll" style="gap:0.5rem;">
+              <div 
+                :for="img in product.images"
+                @click="selectImage(img)"
+                style="width:70px; height:70px; border-radius:0.5rem; overflow:hidden; cursor:pointer; flex-shrink:0; border:2px solid transparent;"
+                :class="main_image === img ? 'border-primary' : ''"
+                :style="main_image === img ? 'border-color:#2563eb;' : 'border-color:transparent;'"
+              >
+                <img :src="img" alt="" class="product-image" style="width:100%; height:100%; object-fit:cover;">
+              </div>
+            </div>
+          </div>
+
+          <!-- KOLOM KANAN: INFO & AKSI -->
+          <div>
+            <!-- Judul & Harga -->
+            <h1 style="font-size:1.5rem; font-weight:700; color:#111827; margin-bottom:0.5rem; line-height:1.3;">
+              <span>{{ product.name }}</span>
+            </h1>
+            
+            <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+              <span style="font-size:1.75rem; font-weight:700; color:#2563eb;">
+                Rp <span>{{ formatRupiah(selected_variant.price) }}</span>
+              </span>
+              <span 
+                class="badge" 
+                :class="selected_variant.stock > 0 ? 'badge-success' : 'badge-danger'"
+              >
+                <span>{{ selected_variant.stock > 0 ? 'Stok: ' + selected_variant.stock : 'Habis' }}</span>
+              </span>
+            </div>
+
+            <p class="text-muted" style="font-size:0.95rem; line-height:1.6; margin-bottom:2rem;">
+              <span>{{ product.description }}</span>
+            </p>
+
+            <!-- Pilih Varian -->
+            <div style="margin-bottom:1.5rem;">
+              <label style="font-weight:600; font-size:0.875rem; margin-bottom:0.5rem; display:block;">Pilih Varian:</label>
+              <div class="variant-selector">
+                <button 
+                  :for="variant in product.variants"
+                  class="variant-btn"
+                  :class="selected_variant.id === variant.id ? 'is-active' : ''"
+                  :disabled="variant.stock === 0"
+                  @click="selectVariant(variant)"
+                >
+                  <span>{{ variant.name }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quantity Stepper -->
+            <div style="margin-bottom:2rem;">
+              <label style="font-weight:600; font-size:0.875rem; margin-bottom:0.5rem; display:block;">Jumlah:</label>
+              <div class="qty-stepper">
+                <button 
+                  class="qty-btn" 
+                  :disabled="qty <= 1"
+                  @click="updateQty('minus')"
+                >-</button>
+                <input type="text" class="qty-input" :value="qty" readonly>
+                <button 
+                  class="qty-btn" 
+                  :disabled="qty >= selected_variant.stock"
+                  @click="updateQty('plus')"
+                >+</button>
+              </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+              <button 
+                class="btn btn-secondary btn-block" 
+                style="flex:1;"
+                @click="addToCart"
+                :disabled="selected_variant.stock === 0"
+              > Tambah ke Keranjang</button>
+              
+              <button 
+                class="btn btn-primary btn-block" 
+                style="flex:1;"
+                @click="buyNow"
+                :disabled="selected_variant.stock === 0"
+              > Beli Sekarang</button>
+            </div>
+
+            <!-- Toast Notification -->
+            <div 
+              class="toast" 
+              :style="show_toast ? '' : 'display:none;'"
+            >
+              <span>{{ toast_message }}</span>
+            </div>
+
+          </div>
+        </div>
+      `)
+    };
+
+    // ==========================================
+    // P2: PROXY (State & Helpers)
+    // ==========================================
+    const proxy = {
+      cart_count: 3,
+      main_image: '',
+      qty: 1,
+      show_toast: false,
+      toast_message: '',
+      
+      selected_variant: {}, // Akan diisi saat init
+      
+      product: {
+        id: 12,
+        name: 'Sepatu Sneakers Aero - Edisi Terbatas dengan Teknologi Bantalan Udara',
+        description: 'Dirancang untuk kenyamanan maksimal sepanjang hari. Menggunakan bahan breathable mesh dan sol karet anti-slip. Cocok untuk lari santai maupun gaya kasual sehari-hari.',
+        images: [
+          'https://picsum.photos/seed/shoe-main/600/600',
+          'https://picsum.photos/seed/shoe-side/600/600',
+          'https://picsum.photos/seed/shoe-back/600/600',
+          'https://picsum.photos/seed/shoe-sole/600/600'
+        ],
+        variants: [
+          { id: 1, name: 'Hitam 40', price: 459000, stock: 12 },
+          { id: 2, name: 'Hitam 42', price: 459000, stock: 5 },
+          { id: 3, name: 'Putih 41', price: 479000, stock: 0 }, // Habis
+          { id: 4, name: 'Merah Maroon 43', price: 489000, stock: 8 }
+        ]
+      },
+
+      formatRupiah: (val) => val.toLocaleString('id-ID')
+    };
+
+    // ==========================================
+    // P3: PROGRAM (Logic)
+    // ==========================================
+    const programs = {
+      // Inisialisasi gambar utama dan varian default
+      init: () => {
+        app.proxy.main_image = app.proxy.product.images[0];
+        // Cari varian pertama yang stoknya > 0
+        const firstAvailable = app.proxy.product.variants.find(v => v.stock > 0);
+        app.proxy.selected_variant = firstAvailable || app.proxy.product.variants[0];
+      },
+
+      selectImage: (img) => {
+        app.proxy.main_image = img;
+      },
+
+      selectVariant: (variant) => {
+        app.proxy.selected_variant = variant;
+        // Reset qty jika stok varian baru lebih kecil dari qty saat ini
+        if (app.proxy.qty > variant.stock) {
+          app.proxy.qty = variant.stock;
+        }
+        if (app.proxy.qty < 1 && variant.stock > 0) {
+          app.proxy.qty = 1;
+        }
+      },
+
+      updateQty: (action) => {
+        if (action === 'minus' && app.proxy.qty > 1) {
+          app.proxy.qty--;
+        } else if (action === 'plus' && app.proxy.qty < app.proxy.selected_variant.stock) {
+          app.proxy.qty++;
+        }
+      },
+
+      showToast: (msg) => {
+        app.proxy.toast_message = msg;
+        app.proxy.show_toast = true;
+        setTimeout(() => {
+          app.proxy.show_toast = false;
+        }, 2000);
+      },
+
+      addToCart: () => {
+        app.proxy.cart_count += app.proxy.qty;
+        app.programs.showToast(`Berhasil menambah ${app.proxy.qty} item ke keranjang!`);
+      },
+
+      buyNow: () => {
+        app.programs.showToast('Mengalihkan ke halaman Checkout...');
+        // Nanti: window.location.href = '/checkout';
+      }
+    };
+
+    // ==========================================
+    // INITIALIZATION & MOUNT
+    // ==========================================
+    const app = new HTMP('app', patterns.detail);
+    app.setProxy(proxy);
+    app.setProgram(programs);
+    app.mount('app');
+
+    // Jalankan inisialisasi setelah mount
+    app.programs.init();
+    document.title = `${proxy.product.name} — TokoKu`;
+  </script>
+</body>
+</html>

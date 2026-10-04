@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — TokoKu</title>
+  <link rel="stylesheet" href="./css/public.css" />
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <script type="module">
+    import { HTMP } from 'https://cdn.jsdelivr.net/npm/htm-projection@v1.2.2/+esm';
+
+    // ==========================================
+    // P1: PATTERN (Template)
+    // ==========================================
+    const publicLayout = (content) => `
+      <div class="public-layout">
+        <header class="public-navbar">
+          <div class="navbar-container">
+            <a href="/" class="navbar-brand"><span>🛍️</span> TokoKu</a>
+            <a href="/cart" class="cart-icon-wrapper">
+              <span style="font-size:1.5rem;">🛒</span>
+              <span class="cart-badge" :style="cart_count > 0 ? '' : 'display:none;'">
+                <span>{{ cart_count }}</span>
+              </span>
+            </a>
+          </div>
+        </header>
+        <main class="public-main">
+          <h1 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem; color:#111827;">Checkout</h1>
+          ${content}
+        </main>
+        <footer class="public-footer">&copy; 2026 TokoKu. Dibuat dengan ❤️ dan HTMP.</footer>
+      </div>
+    `;
+
+    const patterns = {
+      checkout: publicLayout(`
+        <div class="detail-grid">
+          
+          <!-- KOLOM KIRI: FORM PENGIRIMAN & PEMBAYARAN -->
+          <div>
+            <!-- 1. Alamat Pengiriman -->
+            <div class="card mb-3">
+              <h2 class="card-title mb-2">Alamat Pengiriman</h2>
+              
+              <div class="form-group mb-2">
+                <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                <input type="text" class="form-input" :value="form.name" @input="updateProxy(e, 'form.name')" placeholder="Contoh: Budi Santoso" required>
+              </div>
+              
+              <div class="form-group mb-2">
+                <label class="form-label">Nomor Telepon / WhatsApp <span class="text-danger">*</span></label>
+                <input type="tel" class="form-input" :value="form.phone" @input="updateProxy(e, 'form.phone')" placeholder="Contoh: 081234567890" required>
+              </div>
+              
+              <div class="form-group mb-2">
+                <label class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
+                <textarea class="form-textarea" :value="form.address" @input="updateProxy(e, 'form.address')" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW, Patokan" required></textarea>
+              </div>
+              
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div class="form-group">
+                  <label class="form-label">Kota/Kabupaten <span class="text-danger">*</span></label>
+                  <input type="text" class="form-input" :value="form.city" @input="updateProxy(e, 'form.city')" placeholder="Contoh: Jakarta Selatan" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Kode Pos <span class="text-danger">*</span></label>
+                  <input type="text" class="form-input" :value="form.postal_code" @input="updateProxy(e, 'form.postal_code')" placeholder="Contoh: 12345" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Metode Pembayaran -->
+            <div class="card">
+              <h2 class="card-title mb-2">Metode Pembayaran</h2>
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                
+                <div 
+                  class="payment-option" 
+                  :class="payment_method === 'transfer' ? 'is-active' : ''"
+                  @click="selectPayment('transfer')"
+                  style="display:flex; align-items:center; gap:1rem; padding:1rem; border:1px solid #d1d5db; border-radius:0.5rem; cursor:pointer; transition:all 0.2s;"
+                >
+                  <div style="width:20px; height:20px; border-radius:50%; border:2px solid #d1d5db; display:flex; align-items:center; justify-content:center;" :style="payment_method === 'transfer' ? 'border-color:#2563eb;' : ''">
+                    <div style="width:10px; height:10px; border-radius:50%; background:#2563eb;" :style="payment_method === 'transfer' ? '' : 'display:none;'"></div>
+                  </div>
+                  <div>
+                    <div style="font-weight:600; color:#111827;">Transfer Bank</div>
+                    <div style="font-size:0.8rem; color:#6b7280;">BCA, Mandiri, BNI (Otomatis)</div>
+                  </div>
+                </div>
+
+                <div 
+                  class="payment-option" 
+                  :class="payment_method === 'ewallet' ? 'is-active' : ''"
+                  @click="selectPayment('ewallet')"
+                  style="display:flex; align-items:center; gap:1rem; padding:1rem; border:1px solid #d1d5db; border-radius:0.5rem; cursor:pointer; transition:all 0.2s;"
+                >
+                  <div style="width:20px; height:20px; border-radius:50%; border:2px solid #d1d5db; display:flex; align-items:center; justify-content:center;" :style="payment_method === 'ewallet' ? 'border-color:#2563eb;' : ''">
+                    <div style="width:10px; height:10px; border-radius:50%; background:#2563eb;" :style="payment_method === 'ewallet' ? '' : 'display:none;'"></div>
+                  </div>
+                  <div>
+                    <div style="font-weight:600; color:#111827;">E-Wallet / QRIS</div>
+                    <div style="font-size:0.8rem; color:#6b7280;">GoPay, OVO, Dana, ShopeePay</div>
+                  </div>
+                </div>
+
+                <div 
+                  class="payment-option" 
+                  :class="payment_method === 'cod' ? 'is-active' : ''"
+                  @click="selectPayment('cod')"
+                  style="display:flex; align-items:center; gap:1rem; padding:1rem; border:1px solid #d1d5db; border-radius:0.5rem; cursor:pointer; transition:all 0.2s;"
+                >
+                  <div style="width:20px; height:20px; border-radius:50%; border:2px solid #d1d5db; display:flex; align-items:center; justify-content:center;" :style="payment_method === 'cod' ? 'border-color:#2563eb;' : ''">
+                    <div style="width:10px; height:10px; border-radius:50%; background:#2563eb;" :style="payment_method === 'cod' ? '' : 'display:none;'"></div>
+                  </div>
+                  <div>
+                    <div style="font-weight:600; color:#111827;">COD (Bayar di Tempat)</div>
+                    <div style="font-size:0.8rem; color:#6b7280;">Tersedia untuk area tertentu</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- KOLOM KANAN: RINGKASAN PESANAN -->
+          <div>
+            <div class="card" style="position:sticky; top:5rem;">
+              <h2 class="card-title mb-3">Ringkasan Pesanan</h2>
+              
+              <!-- Simulasi 1 item ringkas -->
+              <div style="display:flex; gap:1rem; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid #e5e7eb;">
+                <img src="https://picsum.photos/seed/shoe-main/100/100" alt="" style="width:60px; height:60px; object-fit:cover; border-radius:0.375rem; background:#f3f4f6;">
+                <div style="flex:1;">
+                  <div style="font-size:0.875rem; font-weight:600; color:#111827; margin-bottom:0.25rem;">Sepatu Sneakers Aero</div>
+                  <div style="font-size:0.75rem; color:#6b7280;">Hitam 42 x 1</div>
+                </div>
+                <div style="font-weight:600; color:#111827;">Rp <span>{{ formatRupiah(459000) }}</span></div>
+              </div>
+
+              <div class="summary-row">
+                <span>Subtotal</span>
+                <span>Rp <span>{{ formatRupiah(subtotal) }}</span></span>
+              </div>
+              
+              <div class="summary-row">
+                <span>Ongkos Kirim</span>
+                <span>Rp <span>{{ formatRupiah(shipping_cost) }}</span></span>
+              </div>
+
+              <div class="summary-row total">
+                <span>Total Tagihan</span>
+                <span style="color:#2563eb;">Rp <span>{{ formatRupiah(total) }}</span></span>
+              </div>
+
+              <button 
+                class="btn btn-primary btn-block btn-lg mt-3" 
+                :disabled="isProcessing"
+                @click="placeOrder"
+              >
+                <span>{{ isProcessing ? 'Memproses...' : 'Buat Pesanan' }}</span>
+              </button>
+              
+              <a href="/cart" class="btn btn-secondary btn-block mt-2" style="text-align:center;">Kembali ke Keranjang</a>
+            </div>
+          </div>
+
+        </div>
+      `)
+    };
+
+    // ==========================================
+    // P2: PROXY (State & Helpers)
+    // ==========================================
+    const proxy = {
+      cart_count: 1, // Simulasi dari cart
+      subtotal: 459000,
+      shipping_cost: 15000,
+      total: 474000,
+      isProcessing: false,
+      
+      form: {
+        name: '',
+        phone: '',
+        address: '',
+        city: '',
+        postal_code: ''
+      },
+      
+      payment_method: 'transfer', // Default
+
+      formatRupiah: (val) => val.toLocaleString('id-ID')
+    };
+
+    // ==========================================
+    // P3: PROGRAM (Logic)
+    // ==========================================
+    const programs = {
+      updateProxy: (e, name) => {
+        if (name.includes('.')) {
+          const [parent, child] = name.split('.');
+          app.proxy[parent][child] = e.target.value;
+        } else {
+          app.proxy[name] = e.target.value;
+        }
+      },
+
+      selectPayment: (method) => {
+        app.proxy.payment_method = method;
+      },
+
+      placeOrder: () => {
+        // Validasi Sederhana
+        const f = app.proxy.form;
+        if (!f.name || !f.phone || !f.address || !f.city || !f.postal_code) {
+          alert('Mohon lengkapi semua data alamat pengiriman.');
+          return;
+        }
+
+        app.proxy.isProcessing = true;
+
+        // Simulasi kirim data ke server
+        const payload = {
+          customer: app.proxy.form,
+          payment_method: app.proxy.payment_method,
+          items: [{ product_id: 12, variant_id: 2, qty: 1, price: 459000 }],
+          total: app.proxy.total
+        };
+        
+        console.log('Payload Checkout:', payload);
+
+        setTimeout(() => {
+          app.proxy.isProcessing = false;
+          alert('Pesanan berhasil dibuat! Anda akan diarahkan ke halaman pembayaran.');
+          // window.location.href = '/order-success';
+        }, 1500);
+      }
+    };
+
+    // ==========================================
+    // INITIALIZATION & MOUNT
+    // ==========================================
+    const app = new HTMP('app', patterns.checkout);
+    app.setProxy(proxy);
+    app.setProgram(programs);
+    app.mount('app');
+
+    document.title = 'Checkout — TokoKu';
+  </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keranjang Belanja — TokoKu</title>
+  <link rel="stylesheet" href="./css/public.css" />
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <script type="module">
+    import { HTMP } from 'https://cdn.jsdelivr.net/npm/htm-projection@v1.2.2/+esm';
+
+    // ==========================================
+    // P1: PATTERN (Template)
+    // ==========================================
+    const publicLayout = (content) => `
+      <div class="public-layout">
+        <header class="public-navbar">
+          <div class="navbar-container">
+            <a href="/" class="navbar-brand"><span>🛍️</span> TokoKu</a>
+            <a href="/cart" class="cart-icon-wrapper">
+              <span style="font-size:1.5rem;">🛒</span>
+              <span class="cart-badge" :style="cart_count > 0 ? '' : 'display:none;'">
+                <span>{{ cart_count }}</span>
+              </span>
+            </a>
+          </div>
+        </header>
+        <main class="public-main">
+          <h1 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem; color:#111827;">Keranjang Belanja</h1>
+          ${content}
+        </main>
+        <footer class="public-footer">&copy; 2026 TokoKu. Dibuat dengan ❤️ dan HTMP.</footer>
+      </div>
+    `;
+
+    const patterns = {
+      cart: publicLayout(`
+        <!-- EMPTY STATE -->
+        <div style="text-align:center; padding:3rem 1rem;" :style="cart_items.length === 0 ? '' : 'display:none;'">
+          <div style="font-size:4rem; margin-bottom:1rem;">🛒</div>
+          <h3 style="margin:0 0 0.5rem 0; color:#111827;">Keranjang Anda kosong</h3>
+          <p class="text-muted" style="margin-bottom:1.5rem;">Yuk, mulai belanja dan temukan produk favoritmu!</p>
+          <a href="/catalog" class="btn btn-primary">Mulai Belanja</a>
+        </div>
+
+        <!-- CART CONTENT (Grid: 1 Kolom Mobile, 2 Kolom Desktop) -->
+        <div class="detail-grid" :style="cart_items.length > 0 ? '' : 'display:none;'">
+          
+          <!-- KOLOM KIRI: DAFTAR ITEM -->
+          <div>
+            <div :for="item in cart_items" class="cart-item">
+              <!-- Gambar Produk -->
+              <a :href="'/product/' + item.product_id" class="cart-item-image">
+                <img :src="item.image" alt="" class="product-image">
+              </a>
+              
+              <!-- Detail & Aksi -->
+              <div class="cart-item-details">
+                <div>
+                  <a :href="'/product/' + item.product_id" class="cart-item-title" style="text-decoration:none; color:inherit;">
+                    <span>{{ item.name }}</span>
+                  </a>
+                  <div class="cart-item-variant">
+                    <span>Varian:</span> <span style="font-weight:600; color:#374151;">{{ item.variant_name }}</span>
+                  </div>
+                  <div class="cart-item-price">
+                    Rp <span>{{ formatRupiah(item.price) }}</span>
+                  </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+                  <!-- Quantity Stepper -->
+                  <div class="qty-stepper">
+                    <button 
+                      class="qty-btn" 
+                      :disabled="item.qty <= 1"
+                      @click="updateQty(item, 'minus')"
+                    >-</button>
+                    <input type="text" class="qty-input" :value="item.qty" readonly>
+                    <button 
+                      class="qty-btn" 
+                      :disabled="item.qty >= item.max_stock"
+                      @click="updateQty(item, 'plus')"
+                    >+</button>
+                  </div>
+
+                  <!-- Hapus Item -->
+                  <button 
+                    class="btn btn-sm btn-danger" 
+                    style="background:transparent; color:#dc2626; border:1px solid #fecaca;"
+                    @click="removeItem(item)"
+                  >Hapus</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KOLOM KANAN: RINGKASAN ORDER -->
+          <div>
+            <div class="card" style="position:sticky; top:5rem;">
+              <h2 class="card-title mb-3">Ringkasan Belanja</h2>
+              
+              <div class="summary-row">
+                <span>Subtotal (<span>{{ total_items }}</span> barang)</span>
+                <span>Rp <span>{{ formatRupiah(subtotal) }}</span></span>
+              </div>
+              
+              <div class="summary-row">
+                <span>Estimasi Ongkos Kirim</span>
+                <span>Rp <span>{{ formatRupiah(shipping_cost) }}</span></span>
+              </div>
+
+              <div class="summary-row total">
+                <span>Total Tagihan</span>
+                <span style="color:#2563eb;">Rp <span>{{ formatRupiah(total) }}</span></span>
+              </div>
+
+              <button 
+                class="btn btn-primary btn-block btn-lg mt-3" 
+                @click="proceedToCheckout"
+              >Lanjut ke Checkout</button>
+              
+              <a href="/catalog" class="btn btn-secondary btn-block mt-2" style="text-align:center;">Lanjut Belanja</a>
+            </div>
+          </div>
+
+        </div>
+      `)
+    };
+
+    // ==========================================
+    // P2: PROXY (State & Helpers)
+    // ==========================================
+    const proxy = {
+      cart_count: 0,
+      total_items: 0,
+      subtotal: 0,
+      shipping_cost: 15000, // Flat rate simulasi
+      total: 0,
+      
+      // Mock Data Keranjang
+      cart_items: [
+        { 
+          id: 'cart_1', 
+          product_id: 12, 
+          name: 'Sepatu Sneakers Aero - Edisi Terbatas', 
+          variant_name: 'Hitam 42', 
+          price: 459000, 
+          qty: 1, 
+          max_stock: 5, 
+          image: 'https://picsum.photos/seed/shoe-main/100/100' 
+        },
+        { 
+          id: 'cart_2', 
+          product_id: 15, 
+          name: 'Kaos Polos Premium Cotton Combed 30s', 
+          variant_name: 'Putih XL', 
+          price: 85000, 
+          qty: 2, 
+          max_stock: 20, 
+          image: 'https://picsum.photos/seed/shirt1/100/100' 
+        }
+      ],
+
+      formatRupiah: (val) => val.toLocaleString('id-ID')
+    };
+
+    // ==========================================
+    // P3: PROGRAM (Logic)
+    // ==========================================
+    const programs = {
+      // Helper untuk menghitung ulang total secara otomatis
+      recalculateTotals: () => {
+        let subtotal = 0;
+        let totalQty = 0;
+
+        app.proxy.cart_items.forEach(item => {
+          subtotal += (item.price * item.qty);
+          totalQty += item.qty;
+        });
+
+        app.proxy.subtotal = subtotal;
+        app.proxy.total_items = totalQty;
+        app.proxy.cart_count = totalQty; // Sinkronisasi dengan badge navbar
+        app.proxy.total = subtotal + app.proxy.shipping_cost;
+      },
+
+      updateQty: (item, action) => {
+        if (action === 'minus' && item.qty > 1) {
+          item.qty--;
+        } else if (action === 'plus' && item.qty < item.max_stock) {
+          item.qty++;
+        }
+        // Trigger recalculation setelah mutasi
+        app.programs.recalculateTotals();
+      },
+
+      removeItem: (item) => {
+        if (confirm(`Hapus "${item.name}" (${item.variant_name}) dari keranjang?`)) {
+          // Filter out the item (mutasi array)
+          app.proxy.cart_items = app.proxy.cart_items.filter(i => i.id !== item.id);
+          app.programs.recalculateTotals();
+        }
+      },
+
+      proceedToCheckout: () => {
+        if (app.proxy.cart_items.length === 0) return;
+        alert('Mengalihkan ke halaman Checkout... (Akan dibuat di U4)');
+        // window.location.href = '/checkout';
+      }
+    };
+
+    // ==========================================
+    // INITIALIZATION & MOUNT
+    // ==========================================
+    const app = new HTMP('app', patterns.cart);
+    app.setProxy(proxy);
+    app.setProgram(programs);
+    app.mount('app');
+
+    // Hitung total awal saat halaman dimuat
+    app.programs.recalculateTotals();
+    document.title = 'Keranjang Belanja — TokoKu';
+  </script>
+</body>
+</html>
